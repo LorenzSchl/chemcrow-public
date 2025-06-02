@@ -5,7 +5,8 @@ from dotenv import load_dotenv
 from langchain import PromptTemplate, chains
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from pydantic import ValidationError
-from rmrkl import ChatZeroShotAgent, RetryAgentExecutor
+from rmrkl.agent import ChatZeroShotAgent
+from rmrkl.executor import RetryAgentExecutor
 
 from .prompts import FORMAT_INSTRUCTIONS, QUESTION_PROMPT, REPHRASE_TEMPLATE, SUFFIX
 from .tools import make_tools
