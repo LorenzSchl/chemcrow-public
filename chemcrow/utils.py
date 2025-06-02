@@ -2,7 +2,7 @@ import re
 
 import requests
 from rdkit import Chem, DataStructs
-from rdkit.Chem import AllChem
+from rdkit.Chem import rdFingerprintGenerator
 
 
 def is_smiles(text):
