@@ -56,7 +56,7 @@ In a Python session:
 ```python
 from chemcrow.agents import ChemCrow
 
-chem_model = ChemCrow(model="gpt-4-0613", temp=0.1, streaming=False)
+chem_model = ChemCrow(model="gpt-4.1-mini", temp=0.1, streaming=False)
 chem_model.run("What is the molecular weight of tylenol?")
 ```
 
@@ -80,7 +80,7 @@ Now ChemCrow can be used like this:
 ```python
 from chemcrow.agents import ChemCrow
 
-chem_model = ChemCrow(model="gpt-4-0613", temp=0.1, streaming=False, local_rxn=True)
+chem_model = ChemCrow(model="gpt-4.1-mini", temp=0.1, streaming=False, local_rxn=True)
 chem_model.run("What is the product of the reaction between styrene and dibromine?")
 ```
 
