@@ -27,6 +27,7 @@ setup(
         "google-search-results",
         "langchain",
         "langchain_core",
+        "langchain_openai",
         "nest_asyncio",
         "tiktoken",
         "rmrkl",
