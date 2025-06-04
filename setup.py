@@ -19,6 +19,7 @@ setup(
     install_requires=[
         "ipython",
         "python-dotenv",
+        "pydantic"
         "rdkit",
         "synspace",
         "openai",
