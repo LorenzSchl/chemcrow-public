@@ -23,7 +23,7 @@ setup(
         "synspace",
         "openai",
         "molbloom",
-        "paper-qa",
+        "paper-qa@git+https://github.com/LorenzSchl/paper-qa.git",
         "google-search-results",
         "langchain==0.3,<0.4",
         "langchain_core",
