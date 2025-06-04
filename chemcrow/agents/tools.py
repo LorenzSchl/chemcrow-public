@@ -1,7 +1,4 @@
-import os
-
-from langchain import agents
-from langchain.base_language import BaseLanguageModel
+from langchain.agents import load_tools
 
 from chemcrow.tools import *
 
@@ -17,7 +14,7 @@ def make_tools(llm: BaseLanguageModel, api_keys: dict = {}, local_rxn: bool=Fals
         "SEMANTIC_SCHOLAR_API_KEY"
     )
 
-    all_tools = agents.load_tools(
+    all_tools = load_tools(
         [
             "python_repl",
             # "ddg-search",
