@@ -5,7 +5,7 @@ import langchain
 import molbloom
 import paperqa
 import paperscraper
-from langchain import SerpAPIWrapper
+from langchain_community.utilities import SerpAPIWrapper
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from langchain.base_language import BaseLanguageModel
