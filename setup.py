@@ -30,7 +30,6 @@ setup(
         "langchain_openai",
         "nest_asyncio",
         "tiktoken",
-        "rmrkl@git+https://github.com/LorenzSchl/robust-mrkl.git",
         "paper-scraper@git+https://github.com/blackadad/paper-scraper.git",
         "streamlit",
         "rxn4chemistry",
