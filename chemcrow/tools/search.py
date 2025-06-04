@@ -10,7 +10,7 @@ from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from langchain.base_language import BaseLanguageModel
 from langchain.tools import BaseTool
-from langchain.embeddings import OpenAIEmbeddings
+from langchain_community.embeddings import OpenAIEmbeddings
 from pydantic import Field
 from typing import Optional
 from pypdf.errors import PdfReadError
