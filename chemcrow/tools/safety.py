@@ -8,7 +8,8 @@ import pandas as pd
 import pkg_resources
 import requests
 import tiktoken
-from langchain import LLMChain, PromptTemplate
+from langchain.prompts import PromptTemplate
+from langchain.chains import LLMChain
 from langchain.llms import BaseLLM
 from langchain.tools import BaseTool
 from pydantic import Field

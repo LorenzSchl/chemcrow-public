@@ -1,7 +1,8 @@
 from typing import Optional
 
 from dotenv import load_dotenv
-from langchain import PromptTemplate, chains
+from langchain.prompts import PromptTemplate
+from langchain.chains import LLMChain
 from langchain_openai import ChatOpenAI, OpenAI
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from pydantic import ValidationError
@@ -80,7 +81,7 @@ class ChemCrow:
             input_variables=["question", "agent_ans"], template=REPHRASE_TEMPLATE
         )
 
-        self.rephrase_chain = chains.LLMChain(prompt=rephrase, llm=self.llm)
+        self.rephrase_chain = LLMChain(prompt=rephrase, llm=self.llm)
 
     def run(self, prompt):
         outputs = self.agent_executor({"input": prompt})

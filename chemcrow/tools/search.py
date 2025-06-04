@@ -6,6 +6,8 @@ import molbloom
 import paperqa
 import paperscraper
 from langchain import SerpAPIWrapper
+from langchain.prompts import PromptTemplate
+from langchain.chains import LLMChain
 from langchain.base_language import BaseLanguageModel
 from langchain.tools import BaseTool
 from langchain.embeddings import OpenAIEmbeddings
@@ -28,7 +30,7 @@ def paper_scraper(search: str, pdir: str = "query", semantic_scholar_api_key: st
 
 
 def paper_search(llm, query, semantic_scholar_api_key=None):
-    prompt = langchain.prompts.PromptTemplate(
+    prompt = PromptTemplate(
         input_variables=["question"],
         template="""
         I would like to find scholarly papers to answer
@@ -38,7 +40,7 @@ def paper_search(llm, query, semantic_scholar_api_key=None):
         this question would be: '""",
     )
 
-    query_chain = langchain.chains.llm.LLMChain(llm=llm, prompt=prompt)
+    query_chain = LLMChain(llm=llm, prompt=prompt)
     if not os.path.isdir("./query"):  # todo: move to ckpt
         os.mkdir("query/")
     search = query_chain.run(query)
