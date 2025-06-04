@@ -11,6 +11,8 @@ import tiktoken
 from langchain import LLMChain, PromptTemplate
 from langchain.llms import BaseLLM
 from langchain.tools import BaseTool
+from pydantic import Field
+from typing import Optional, Dict
 
 from chemcrow.utils import is_smiles, pubchem_query2smiles, tanimoto
 
@@ -159,19 +161,16 @@ class MoleculeSafety:
 
 
 class SafetySummary(BaseTool):
-    name = "SafetySummary"
-    description = (
-        "Input CAS number, returns a summary of safety information."
-        "The summary includes Operator safety, GHS information, "
-        "Environmental risks, and Societal impact."
-    )
-    llm: BaseLLM = None
-    llm_chain: LLMChain = None
-    pubchem_data: dict = dict()
-    mol_safety: MoleculeSafety = None
+    name: str = Field(default="SafetySummary")
+    description: str = Field(default="Input CAS number, returns a summary of safety information. The summary includes Operator safety, GHS information, Environmental risks, and Societal impact.")
+    llm: Optional[BaseLLM] = Field(default=None)
+    llm_chain: Optional[LLMChain] = Field(default=None)
+    pubchem_data: Dict = Field(default_factory=dict)
+    mol_safety: Optional[MoleculeSafety] = Field(default=None)
 
     def __init__(self, llm):
         super().__init__()
+        # TODO: This is a temporary fix, need to find a better way to handle this, Field provides default_factory for this.
         self.mol_safety = MoleculeSafety(llm=llm)
         self.llm = llm
         prompt = PromptTemplate(
@@ -194,12 +193,13 @@ class SafetySummary(BaseTool):
 
 
 class ExplosiveCheck(BaseTool):
-    name = "ExplosiveCheck"
-    description = "Input CAS number, returns if molecule is explosive."
-    mol_safety: MoleculeSafety = None
+    name: str = Field(default="ExplosiveCheck")
+    description: str = Field(default="Input CAS number, returns if molecule is explosive.")
+    mol_safety: Optional[MoleculeSafety] = Field(default=None)
 
     def __init__(self):
         super().__init__()
+        # TODO: This is a temporary fix, need to find a better way to handle this, Field provides default_factory for this.
         self.mol_safety = MoleculeSafety()
 
     def _run(self, cas_number):
@@ -222,8 +222,8 @@ class ExplosiveCheck(BaseTool):
 
 
 class SimilarControlChemCheck(BaseTool):
-    name = "SimilarityToControlChem"
-    description = "Input SMILES, returns similarity to controlled chemicals."
+    name: str = Field(default="SimilarityToControlChem")
+    description: str = Field(default="Input SMILES, returns similarity to controlled chemicals.")
 
     def _run(self, smiles: str) -> str:
         """Checks max similarity between compound and controlled chemicals.
@@ -263,9 +263,9 @@ class SimilarControlChemCheck(BaseTool):
 
 
 class ControlChemCheck(BaseTool):
-    name = "ControlChemCheck"
-    description = "Input CAS number, True if molecule is a controlled chemical."
-    similar_control_chem_check = SimilarControlChemCheck()
+    name: str = Field(default="ControlChemCheck")
+    description: str = Field(default="Input CAS number, True if molecule is a controlled chemical.")
+    similar_control_chem_check: SimilarControlChemCheck = Field(default_factory=SimilarControlChemCheck)
 
     def _run(self, query: str) -> str:
         """Checks if compound is a controlled chemical. Input CAS number."""

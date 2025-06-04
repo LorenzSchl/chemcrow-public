@@ -12,6 +12,7 @@ import json
 from langchain.chat_models import ChatOpenAI
 from langchain.schema import HumanMessage
 from langchain.tools import BaseTool
+from pydantic import Field
 
 from chemcrow.utils import is_smiles
 
@@ -21,12 +22,8 @@ __all__ = ["RXNPredictLocal", "RXNRetrosynthesisLocal"]
 class RXNPredictLocal(BaseTool):
     """Predict reaction."""
 
-    name = "ReactionPredict"
-    description = (
-        "Predict the outcome of a chemical reaction. "
-        "Takes as input the SMILES of the reactants separated by a dot '.', "
-        "returns SMILES of the products."
-    )
+    name: str = Field(default="ReactionPredict")
+    description: str = Field(default="Predict the outcome of a chemical reaction. Takes as input the SMILES of the reactants separated by a dot '.', returns SMILES of the products.")
 
     def _run(self, reactants: str) -> str:
         """Run reaction prediction."""
@@ -52,12 +49,9 @@ class RXNPredictLocal(BaseTool):
 class RXNRetrosynthesisLocal(BaseTool):
     """Predict retrosynthesis."""
 
-    name = "ReactionRetrosynthesis"
-    description = (
-        "Obtain the synthetic route to a chemical compound. "
-        "Takes as input the SMILES of the product, returns recipe."
-    )
-    openai_api_key: str = ""
+    name: str = Field(default="ReactionRetrosynthesis")
+    description: str = Field(default="Obtain the synthetic route to a chemical compound. Takes as input the SMILES of the product, returns recipe.")
+    openai_api_key: str = Field(default="")
 
     def _run(self, reactants: str) -> str:
         """Run reaction prediction."""

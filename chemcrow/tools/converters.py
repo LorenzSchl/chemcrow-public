@@ -1,4 +1,6 @@
 from langchain.tools import BaseTool
+from pydantic import Field
+from typing import Optional
 
 from chemcrow.tools.chemspace import ChemSpace
 from chemcrow.tools.safety import ControlChemCheck
@@ -12,16 +14,17 @@ from chemcrow.utils import (
 
 
 class Query2CAS(BaseTool):
-    name = "Mol2CAS"
-    description = "Input molecule (name or SMILES), returns CAS number."
-    url_cid: str = None
-    url_data: str = None
-    ControlChemCheck = ControlChemCheck()
+    name: str = Field(default="Mol2CAS")
+    description: str = Field(default="Input molecule (name or SMILES), returns CAS number.")
+    url_cid: Optional[str] = Field(default=None)
+    url_data: Optional[str] = Field(default=None)
+    checker: ControlChemCheck = Field(default_factory=ControlChemCheck)
 
     def __init__(
         self,
     ):
         super().__init__()
+        # TODO: This is a temporary fix, need to find a better way to handle this, Field provides default_factory for this.
         self.url_cid = (
             "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/{}/{}/cids/JSON"
         )
@@ -45,7 +48,7 @@ class Query2CAS(BaseTool):
                 except ValueError as e:
                     return str(e)
             # check if mol is controlled
-            msg = self.ControlChemCheck._run(smiles)
+            msg = self.checker._run(smiles)
             if "high similarity" in msg or "appears" in msg:
                 return f"CAS number {cas}found, but " + msg
             return cas
@@ -58,15 +61,16 @@ class Query2CAS(BaseTool):
 
 
 class Query2SMILES(BaseTool):
-    name = "Name2SMILES"
-    description = "Input a molecule name, returns SMILES."
-    url: str = None
-    chemspace_api_key: str = None
-    ControlChemCheck = ControlChemCheck()
+    name: str = Field(default="Name2SMILES")
+    description: str = Field(default="Input a molecule name, returns SMILES.")
+    url: Optional[str] = Field(default=None)
+    chemspace_api_key: Optional[str] = Field(default=None)
+    checker: ControlChemCheck = Field(default_factory=ControlChemCheck)
 
-    def __init__(self, chemspace_api_key: str = None):
+    def __init__(self, chemspace_api_key: Optional[str] = None):
         super().__init__()
         self.chemspace_api_key = chemspace_api_key
+        # TODO: This is a temporary fix, need to find a better way to handle this, Field provides default_factory for this.
         self.url = "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/{}/{}"
 
     def _run(self, query: str) -> str:
@@ -88,7 +92,7 @@ class Query2SMILES(BaseTool):
                 return str(e)
 
         # check if mol is controlled
-        msg = "Note: " + self.ControlChemCheck._run(smi)
+        msg = "Note: " + self.checker._run(smi)
         if "high similarity" in msg or "appears" in msg:
             return f"CAS number {smi}found, but " + msg
         return smi
@@ -99,13 +103,14 @@ class Query2SMILES(BaseTool):
 
 
 class SMILES2Name(BaseTool):
-    name = "SMILES2Name"
-    description = "Input SMILES, returns molecule name."
-    ControlChemCheck = ControlChemCheck()
-    query2smiles = Query2SMILES()
+    name: str = Field(default="SMILES2Name")
+    description: str = Field(default="Input SMILES, returns molecule name.")
+    checker: ControlChemCheck = Field(default_factory=ControlChemCheck)
+    query2smiles: Query2SMILES = Field(default_factory=Query2SMILES)
 
     def __init__(self):
         super().__init__()
+        # TODO: This is a temporary fix, need to find a better way to handle this, Field provides default_factory for this.
 
     def _run(self, query: str) -> str:
         """Use the tool."""
@@ -117,7 +122,7 @@ class SMILES2Name(BaseTool):
                     raise ValueError("Invalid molecule input, no Pubchem entry")
             name = smiles2name(query)
             # check if mol is controlled
-            msg = "Note: " + self.ControlChemCheck._run(query)
+            msg = "Note: " + self.checker._run(query)
             if "high similarity" in msg or "appears" in msg:
                 return f"Molecule name {name} found, but " + msg
             return name
