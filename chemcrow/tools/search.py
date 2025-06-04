@@ -1,17 +1,20 @@
 import os
 import re
 
-import langchain
 import molbloom
 import paperqa
 import paperscraper
-from langchain import SerpAPIWrapper
+from langchain_community.utilities import SerpAPIWrapper
+from langchain.prompts import PromptTemplate
+from langchain.chains import LLMChain
 from langchain.base_language import BaseLanguageModel
 from langchain.tools import BaseTool
-from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain_community.embeddings import OpenAIEmbeddings
+from pydantic import Field
+from typing import Optional
 from pypdf.errors import PdfReadError
 
-from chemcrow.utils import is_multiple_smiles, split_smiles
+from chemcrow.utils import is_multiple_smiles, split_smiles, is_smiles
 
 
 def paper_scraper(search: str, pdir: str = "query", semantic_scholar_api_key: str = None) -> dict:
@@ -26,7 +29,7 @@ def paper_scraper(search: str, pdir: str = "query", semantic_scholar_api_key: st
 
 
 def paper_search(llm, query, semantic_scholar_api_key=None):
-    prompt = langchain.prompts.PromptTemplate(
+    prompt = PromptTemplate(
         input_variables=["question"],
         template="""
         I would like to find scholarly papers to answer
@@ -36,7 +39,7 @@ def paper_search(llm, query, semantic_scholar_api_key=None):
         this question would be: '""",
     )
 
-    query_chain = langchain.chains.llm.LLMChain(llm=llm, prompt=prompt)
+    query_chain = LLMChain(llm=llm, prompt=prompt)
     if not os.path.isdir("./query"):  # todo: move to ckpt
         os.mkdir("query/")
     search = query_chain.run(query)
@@ -73,18 +76,16 @@ def scholar2result_llm(llm, query, k=5, max_sources=2, openai_api_key=None, sema
 
 
 class Scholar2ResultLLM(BaseTool):
-    name = "LiteratureSearch"
-    description = (
-        "Useful to answer questions that require technical "
-        "knowledge. Ask a specific question."
-    )
-    llm: BaseLanguageModel = None
-    openai_api_key: str = None 
-    semantic_scholar_api_key: str = None
+    name: str = Field(default="LiteratureSearch")
+    description: str = Field(default="Useful to answer questions that require technical knowledge. Ask a specific question.")
+    llm: Optional[BaseLanguageModel] = Field(default=None)
+    openai_api_key: Optional[str] = Field(default=None)
+    semantic_scholar_api_key: Optional[str] = Field(default=None)
 
 
     def __init__(self, llm, openai_api_key, semantic_scholar_api_key):
         super().__init__()
+        # TODO: This is a temporary fix, need to find a better way to handle this, Field provides default_factory for this.
         self.llm = llm
         # api keys
         self.openai_api_key = openai_api_key
@@ -113,15 +114,13 @@ def web_search(keywords, search_engine="google"):
 
 
 class WebSearch(BaseTool):
-    name = "WebSearch"
-    description = (
-        "Input a specific question, returns an answer from web search. "
-        "Do not mention any specific molecule names, but use more general features to formulate your questions."
-    )
-    serp_api_key: str = None
+    name: str = Field(default="WebSearch")
+    description: str = Field(default="Input a specific question, returns an answer from web search. Do not mention any specific molecule names, but use more general features to formulate your questions.")
+    serp_api_key: Optional[str] = Field(default=None)
 
-    def __init__(self, serp_api_key: str = None):
+    def __init__(self, serp_api_key: Optional[str] = None):
         super().__init__()
+        # TODO: This is a temporary fix, need to find a better way to handle this, Field provides default_factory for this.
         self.serp_api_key = serp_api_key
 
     def _run(self, query: str) -> str:
@@ -136,8 +135,8 @@ class WebSearch(BaseTool):
 
 
 class PatentCheck(BaseTool):
-    name = "PatentCheck"
-    description = "Input SMILES, returns if molecule is patented. You may also input several SMILES, separated by a period."
+    name: str = Field(default="PatentCheck")
+    description: str = Field(default="Input SMILES, returns if molecule is patented. You may also input several SMILES, separated by a period.")
 
     def _run(self, smiles: str) -> str:
         """Checks if compound is patented. Give this tool only one SMILES string"""
@@ -145,17 +144,34 @@ class PatentCheck(BaseTool):
             smiles_list = split_smiles(smiles)
         else:
             smiles_list = [smiles]
-        try:
-            output_dict = {}
-            for smi in smiles_list:
-                r = molbloom.buy(smi, canonicalize=True, catalog="surechembl")
+
+        output_dict = {}
+        for smi_input in smiles_list:
+            if not is_smiles(smi_input):
+                # If any of the inputs are not valid SMILES, return error for that input.
+                # Or, per test expectation, if the primary input (even if single) is not SMILES,
+                # the whole operation should yield "Invalid SMILES string".
+                # The test `test_patentcheck_iupac` implies the latter.
+                # However, if multiple "SMILES" are passed, and one is invalid,
+                # it might be better to report per-SMILES.
+                # For now, let's strictly follow the test's expectation for a single non-SMILES input.
+                if len(smiles_list) == 1 and not is_multiple_smiles(smiles): # 'smiles' is the original input
+                    return "Invalid SMILES string"
+                output_dict[smi_input] = "Invalid SMILES string"
+                continue
+            try:
+                r = molbloom.buy(smi_input, canonicalize=True, catalog="surechembl")
                 if r:
-                    output_dict[smi] = "Patented"
+                    output_dict[smi_input] = "Patented"
                 else:
-                    output_dict[smi] = "Novel"
-            return str(output_dict)
-        except:
+                    output_dict[smi_input] = "Novel"
+            except Exception: # Catching specific exceptions from molbloom would be better
+                output_dict[smi_input] = "Error processing SMILES"
+
+        if len(smiles_list) == 1 and output_dict.get(smiles_list[0]) == "Invalid SMILES string":
             return "Invalid SMILES string"
+
+        return str(output_dict)
 
     async def _arun(self, query: str) -> str:
         """Use the tool asynchronously."""

@@ -4,6 +4,8 @@ import molbloom
 import pandas as pd
 import requests
 from langchain.tools import BaseTool
+from pydantic import Field
+from typing import Optional
 
 from chemcrow.utils import is_smiles
 
@@ -170,12 +172,12 @@ class ChemSpace:
 
 
 class GetMoleculePrice(BaseTool):
-    name = "GetMoleculePrice"
-    description = "Get the cheapest available price of a molecule."
-    chemspace_api_key: str = None
-    url: str = None
+    name: str = Field(default="GetMoleculePrice")
+    description: str = Field(default="Get the cheapest available price of a molecule.")
+    chemspace_api_key: Optional[str] = Field(default=None)
+    url: Optional[str] = Field(default=None)
 
-    def __init__(self, chemspace_api_key: str = None):
+    def __init__(self, chemspace_api_key: Optional[str] = None):
         super().__init__()
         self.chemspace_api_key = chemspace_api_key
         self.url = "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/{}/{}"
