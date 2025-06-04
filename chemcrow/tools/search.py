@@ -1,7 +1,6 @@
 import os
 import re
 
-import langchain
 import molbloom
 import paperqa
 import paperscraper
