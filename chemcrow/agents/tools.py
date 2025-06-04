@@ -1,9 +1,10 @@
-from langchain_community.agent_toolkits.load_tools import load_tools
-
+from langchain_experimental.tools import PythonREPLTool
+from langchain_community.tools import WikipediaQueryRun, HumanInputRun, DuckDuckGoSearchRun
+from langchain_community.utilities import WikipediaAPIWrapper
 from chemcrow.tools import *
 
 
-def make_tools(llm: BaseLanguageModel, api_keys: dict = {}, local_rxn: bool=False, verbose=True):
+def make_tools(llm: BaseLanguageModel, api_keys: dict = {}, local_rxn: bool = False, verbose=True):
     serp_api_key = api_keys.get("SERP_API_KEY") or os.getenv("SERP_API_KEY")
     rxn4chem_api_key = api_keys.get("RXN4CHEM_API_KEY") or os.getenv("RXN4CHEM_API_KEY")
     openai_api_key = api_keys.get("OPENAI_API_KEY") or os.getenv("OPENAI_API_KEY")
@@ -14,14 +15,12 @@ def make_tools(llm: BaseLanguageModel, api_keys: dict = {}, local_rxn: bool=Fals
         "SEMANTIC_SCHOLAR_API_KEY"
     )
 
-    all_tools = load_tools(
-        [
-            "python_repl",
-            # "ddg-search",
-            "wikipedia",
-            # "human"
-        ]
-    )
+    all_tools = [
+        PythonREPLTool(),
+        DuckDuckGoSearchRun(),
+        WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper()),
+        HumanInputRun()
+    ]
 
     all_tools += [
         Query2SMILES(chemspace_api_key),
