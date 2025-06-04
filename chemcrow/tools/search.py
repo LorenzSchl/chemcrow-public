@@ -8,7 +8,7 @@ import paperscraper
 from langchain import SerpAPIWrapper
 from langchain.base_language import BaseLanguageModel
 from langchain.tools import BaseTool
-from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain.embeddings import OpenAIEmbeddings
 from pydantic import Field
 from typing import Optional
 from pypdf.errors import PdfReadError
