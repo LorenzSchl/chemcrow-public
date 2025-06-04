@@ -3,7 +3,7 @@ import os
 
 import pytest
 from dotenv import load_dotenv
-from langchain.chat_models import ChatOpenAI
+from langchain_community.chat_models import ChatOpenAI
 
 from chemcrow.tools.search import PatentCheck, Scholar2ResultLLM
 from chemcrow.utils import split_smiles

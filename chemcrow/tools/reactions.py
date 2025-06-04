@@ -9,7 +9,7 @@ from typing import Optional
 import requests
 
 import json
-from langchain.chat_models import ChatOpenAI
+from langchain_community.chat_models import ChatOpenAI
 from langchain.schema import HumanMessage
 from langchain.tools import BaseTool
 from pydantic import Field
