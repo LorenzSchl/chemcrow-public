@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional
 
-from langchain.callbacks.streamlit.streamlit_callback_handler import (
+from langchain_community.callbacks.streamlit.streamlit_callback_handler import (
     LLMThought,
     LLMThoughtLabeler,
     LLMThoughtState,
